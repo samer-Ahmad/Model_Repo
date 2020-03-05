@@ -5,11 +5,11 @@ import com.samer.regestration.model.entity.Student;
 import java.sql.SQLException;
 
 public interface StudentDAO {
-    Student findById(String id) throws SQLException;
+    Student findStudentById(String studentId) throws SQLException;
 
-    Student findByEmail();
+    Student findStudentByEmail(String studentEmail) throws SQLException;
 
-    void save(Student student);
+    void save(Student student) throws SQLException;
 
-    void update(Student student);
+    void update(Student student) throws SQLException;
 }

@@ -1,12 +1,24 @@
 package com.samer.regestration.model.entity;
 
 public class Student {
-    String id;
-    String firstName;
-    String lastName;
-    String email;
-    String password;
-    Integer joinYear;
+    private String id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String password;
+    private String joinYear;
+
+    public Student(String id, String firstName, String lastName, String email, String password, String joinYear) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.joinYear = joinYear;
+    }
+
+    public Student() {
+    }
 
     public String getId() {
         return id;
@@ -48,11 +60,23 @@ public class Student {
         this.password = password;
     }
 
-    public Integer getJoinYear() {
+    public String getJoinYear() {
         return joinYear;
     }
 
-    public void setJoinYear(Integer joinYear) {
+    public void setJoinYear(String joinYear) {
         this.joinYear = joinYear;
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "id='" + id + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", joinYear=" + joinYear +
+                '}';
     }
 }
