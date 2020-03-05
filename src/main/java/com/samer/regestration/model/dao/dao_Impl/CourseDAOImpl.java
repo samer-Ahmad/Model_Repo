@@ -7,6 +7,7 @@ import com.samer.regestration.model.utils.DataSourcePool;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CourseDAOImpl implements CourseDAO {
@@ -30,21 +31,24 @@ public class CourseDAOImpl implements CourseDAO {
 
     @Override
     public List<Course> findCourseByInstructor(String instructorId) throws SQLException {
-        String statement = "select * from course_table where instructorId ='" + instructorId + "'";
+        String statement = "select * from course_table where instructorId ='" + instructorId + "';";
         ResultSet resultSet = getResultSet(statement);
-        return null;
+        List<Course> courseList = getCourseList(resultSet);
+        return courseList;
     }
 
     @Override
     public void save(Course course) throws SQLException {
         String statement = "insert into course_table(courseId,courseCode,courseName,instructorId,capacity,startingDate" +
-                "duration,totalHours)" +
+                ",duration,totalHours)" +
                 "value(?,?,?,?,?,?,?,?)";
         insertExecute(statement, course);
     }
 
     @Override
-    public void delete(Course course) {
+    public void delete(String courseId) throws SQLException {
+        String starement = "delete from course_table where courseId ='" + courseId + "';";
+        updateExecute(starement);
 
     }
 
@@ -83,5 +87,23 @@ public class CourseDAOImpl implements CourseDAO {
         preparedStatement.setString(7, course.getDuration());
         preparedStatement.setString(8, course.getTotalHours());
         preparedStatement.executeUpdate();
+    }
+
+    private void updateExecute(String query) throws SQLException {
+        PreparedStatement preparedStatement = pool.getConnection("jdbc:mysql://localhost/student_db",
+                "root", "root@JEA").getConnection().prepareStatement(query);
+        preparedStatement.executeUpdate();
+    }
+
+    private List<Course> getCourseList(ResultSet resultSet) throws SQLException {
+        List<Course> courseList = new ArrayList<>();
+        Course course = new Course();
+        System.out.println(resultSet.getMetaData());
+        while (resultSet.next()) {
+            courseList.add(getCourse(course, resultSet));
+
+        }
+        return courseList;
+
     }
 }

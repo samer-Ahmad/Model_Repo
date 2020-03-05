@@ -14,5 +14,5 @@ public interface CourseDAO {
 
     void save(Course course) throws SQLException;
 
-    void delete(Course course);
+    void delete(String courseId) throws SQLException;
 }
