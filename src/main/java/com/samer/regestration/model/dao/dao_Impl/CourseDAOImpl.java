@@ -4,6 +4,7 @@ import com.samer.regestration.model.dao.CourseDAO;
 import com.samer.regestration.model.entity.Course;
 import com.samer.regestration.model.utils.DataSourcePool;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,97 +12,117 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CourseDAOImpl implements CourseDAO {
-    DataSourcePool pool = new DataSourcePool();
+    private DataSourcePool pool = new DataSourcePool("jdbc:mysql://localhost/student_db",
+            "root", "root@JEA");
 
     @Override
-    public Course findCourseById(String courseId) throws SQLException {
-        String statement = "select * from course_table where courseId ='" + courseId + "'";
-        ResultSet resultSet = getResultSet(statement);
-        Course course = new Course();
-        return getCourse(course, resultSet);
+    public Course findCourseById(String courseId) {
+        String statement = String.format("select * from course_table where courseId =%s", courseId);
+        return selectCourse(statement);
     }
 
     @Override
-    public Course findCourseByName(String courseName) throws SQLException {
-        String statement = "select * from course_table where courseName ='" + courseName + "'";
-        ResultSet resultSet = getResultSet(statement);
-        Course course = new Course();
-        return getCourse(course, resultSet);
+    public Course findCourseByName(String courseName) {
+        String statement1 = String.format("select * from course_table where courseName='%s'", courseName);
+        return selectCourse(statement1);
     }
 
     @Override
-    public List<Course> findCourseByInstructor(String instructorId) throws SQLException {
-        String statement = "select * from course_table where instructorId ='" + instructorId + "';";
-        ResultSet resultSet = getResultSet(statement);
-        List<Course> courseList = getCourseList(resultSet);
+    public List<Course> findCourseByInstructor(String instructorId) {
+        String statement = String.format("select * from course_table where instructorId ='%s'", instructorId);
+        ResultSet resultSet;
+        List<Course> courseList = null;
+        try {
+            resultSet = getResultSet(statement);
+            courseList = getCourseList(resultSet);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return courseList;
     }
 
     @Override
-    public void save(Course course) throws SQLException {
+    public int save(Course course) {
         String statement = "insert into course_table(courseId,courseCode,courseName,instructorId,capacity,startingDate" +
                 ",duration,totalHours)" +
                 "value(?,?,?,?,?,?,?,?)";
-        insertExecute(statement, course);
+        int numberOfRowEffected = 0;
+        try {
+            numberOfRowEffected = insertExecute(statement, course);
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        return numberOfRowEffected;
     }
 
     @Override
-    public void delete(String courseId) throws SQLException {
-        String starement = "delete from course_table where courseId ='" + courseId + "';";
-        updateExecute(starement);
-
+    public int delete(String courseId) {
+        String starement = String.format("delete from course_table where courseId =%s", courseId);
+        int numberOfRowEffected = 0;
+        try {
+            numberOfRowEffected = updateExecute(starement);
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        return numberOfRowEffected;
     }
 
     private ResultSet getResultSet(String statement) throws SQLException {
-        PreparedStatement statement1 = pool.getConnection("jdbc:mysql://localhost/student_db",
-                "root", "root@JEA").getConnection().prepareStatement(statement);
+        PreparedStatement statement1 = pool.getConnection().getConnection().prepareStatement(statement);
         ResultSet resultSet = statement1.executeQuery();
 
         return resultSet;
     }
 
-    private Course getCourse(Course course, ResultSet resultSet) throws SQLException {
-        resultSet.next();
-        course.setCourseId(resultSet.getString("courseId"));
-        course.setCourseCode(resultSet.getString("courseCode"));
-        course.setCapacity(resultSet.getString("capacity"));
-        course.setCourseName(resultSet.getString("courseName"));
-        course.setDuration(resultSet.getString("duration"));
-        course.setInstructorId(resultSet.getString("instructorId"));
-        course.setStartingDate(resultSet.getString("startingDate"));
-        course.setTotalHours(resultSet.getString("totalHours"));
-
+    private Course selectCourse(String statement) {
+        ResultSet resultSet;
+        Course course;
+        try {
+            resultSet = getResultSet(statement);
+            resultSet.next();
+            course = buildCourse(resultSet);
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        }
         return course;
 
     }
 
-    private void insertExecute(String query, Course course) throws SQLException {
-        PreparedStatement preparedStatement = pool.getConnection("jdbc:mysql://localhost/student_db",
-                "root", "root@JEA").getConnection().prepareStatement(query);
+    public Course buildCourse(ResultSet resultSet) throws SQLException {
+        Course course = new Course();
+        course.setCourseId(resultSet.getString("courseId"));
+        course.setCourseCode(resultSet.getString("courseCode"));
+        course.setCapacity(resultSet.getInt("capacity"));
+        course.setCourseName(resultSet.getString("courseName"));
+        course.setDuration(resultSet.getString("duration"));
+        course.setInstructorId(resultSet.getString("instructorId"));
+        course.setStartingDate(resultSet.getDate("startingDate"));
+        course.setTotalHours(resultSet.getString("totalHours"));
+        return course;
+    }
+
+    private int insertExecute(String query, Course course) throws SQLException {
+        PreparedStatement preparedStatement = pool.getConnection().getConnection().prepareStatement(query);
         preparedStatement.setString(1, course.getCourseId());
         preparedStatement.setString(2, course.getCourseCode());
         preparedStatement.setString(3, course.getCourseName());
         preparedStatement.setString(4, course.getInstructorId());
-        preparedStatement.setString(5, course.getCapacity());
-        preparedStatement.setString(6, course.getStartingDate());
+        preparedStatement.setInt(5, course.getCapacity());
+        preparedStatement.setDate(6, (Date) course.getStartingDate());
         preparedStatement.setString(7, course.getDuration());
         preparedStatement.setString(8, course.getTotalHours());
-        preparedStatement.executeUpdate();
+        return preparedStatement.executeUpdate();
     }
 
-    private void updateExecute(String query) throws SQLException {
-        PreparedStatement preparedStatement = pool.getConnection("jdbc:mysql://localhost/student_db",
-                "root", "root@JEA").getConnection().prepareStatement(query);
-        preparedStatement.executeUpdate();
+    private int updateExecute(String query) throws SQLException {
+        PreparedStatement preparedStatement = pool.getConnection().getConnection().prepareStatement(query);
+        return preparedStatement.executeUpdate();
     }
 
     private List<Course> getCourseList(ResultSet resultSet) throws SQLException {
         List<Course> courseList = new ArrayList<>();
-        Course course = new Course();
-        System.out.println(resultSet.getMetaData());
         while (resultSet.next()) {
-            courseList.add(getCourse(course, resultSet));
-
+            courseList.add(buildCourse(resultSet));
         }
         return courseList;
 

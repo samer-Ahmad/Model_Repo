@@ -1,5 +1,7 @@
 package com.samer.regestration.model.entity;
 
+import java.util.Objects;
+
 public class Student {
     private String id;
     private String firstName;
@@ -8,6 +10,9 @@ public class Student {
     private String password;
     private String joinYear;
 
+    public Student() {
+    }
+
     public Student(String id, String firstName, String lastName, String email, String password, String joinYear) {
         this.id = id;
         this.firstName = firstName;
@@ -15,9 +20,6 @@ public class Student {
         this.email = email;
         this.password = password;
         this.joinYear = joinYear;
-    }
-
-    public Student() {
     }
 
     public String getId() {
@@ -78,5 +80,23 @@ public class Student {
                 ", password='" + password + '\'' +
                 ", joinYear=" + joinYear +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Student)) return false;
+        Student student = (Student) o;
+        return Objects.equals(getId(), student.getId()) &&
+                Objects.equals(getFirstName(), student.getFirstName()) &&
+                Objects.equals(getLastName(), student.getLastName()) &&
+                Objects.equals(getEmail(), student.getEmail()) &&
+                Objects.equals(getPassword(), student.getPassword()) &&
+                Objects.equals(getJoinYear(), student.getJoinYear());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getFirstName(), getLastName(), getEmail(), getPassword(), getJoinYear());
     }
 }

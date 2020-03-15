@@ -9,83 +9,93 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class StudentDAOImpl implements StudentDAO {
-    DataSourcePool pool = new DataSourcePool();
+    private DataSourcePool pool = new DataSourcePool("jdbc:mysql://localhost/student_db",
+            "root", "root@JEA");
 
-    public Student findStudentById(String id) throws SQLException {
-        String statement = "select * from student where id ='" + id + "'";
-        ResultSet resultSet = getResultSet(statement);
-
-        Student student = new Student();
-        return getStudent(student, resultSet);
+    public Student findStudentById(String id) {
+        String statement = String.format("select * from student where id=%s", id);
+        return selectStudent(statement);
     }
 
-
-    public Student findStudentByEmail(String email) throws SQLException {
-        Student student1 = new Student();
-        String statement = "select * from student where email ='" + email + "'";
-        ResultSet resultSet = getResultSet(statement);
-        return getStudent(student1, resultSet);
+    public Student findStudentByEmail(String email) {
+        String statement = String.format("SELECT * FROM student where email ='%s'", email);
+        return selectStudent(statement);
     }
 
-
-    public void save(Student student) throws SQLException {
+    public int save(Student student) {
         String statement = "insert into student(id,firstName,lastName,email,password,joinYear)" +
                 "value(?,?,?,?,?,?)";
-        insertExecute(statement, student);
-
-//        String statement = "insert into student value('" + student.getId() + "' , '"+student.getFirstName()+"' , ' "+
-//                student.getLastName()+"' , '"+student.getEmail()+"' , '"+student.getPassword()+"' , '"+
-//                student.getJoinYear()+"')";
+        int numberOfRowEffected = 0;
+        try {
+            numberOfRowEffected = insertExecute(statement, student);
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        return numberOfRowEffected;
     }
 
-    public void update(Student student) throws SQLException {
+    public int update(Student student) {
         String statement = "update  student set firstName=? , lastName=? ,  email=? ,  password=? , joinYear=? " +
                 "where id = ?";
-        updateExecute(statement, student);
+        int numberOfRowEffected = 0;
+        try {
+            numberOfRowEffected = updateExecute(statement, student);
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        return numberOfRowEffected;
     }
 
     private ResultSet getResultSet(String statement) throws SQLException {
-        PreparedStatement statement1 = pool.getConnection("jdbc:mysql://localhost/student_db",
-                "root", "root@JEA").getConnection().prepareStatement(statement);
+        PreparedStatement statement1 = pool.getConnection().getConnection().prepareStatement(statement);
         ResultSet resultSet = statement1.executeQuery();
-
         return resultSet;
     }
 
-    private Student getStudent(Student student, ResultSet resultSet) throws SQLException {
-        resultSet.next();
+    private Student selectStudent(String statement) {
+        ResultSet resultSet;
+        Student student1;
+        try {
+            resultSet = getResultSet(statement);
+            resultSet.next();
+            student1 = buildStudent(resultSet);
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        return student1;
+    }
+
+    public Student buildStudent(ResultSet resultSet) throws SQLException {
+        Student student = new Student();
         student.setId(resultSet.getString("id"));
         student.setFirstName(resultSet.getString("firstName"));
         student.setLastName(resultSet.getString("lastName"));
         student.setEmail(resultSet.getString("email"));
         student.setPassword(resultSet.getString("password"));
         student.setJoinYear(resultSet.getString("joinYear"));
-
         return student;
     }
 
-    private void insertExecute(String query, Student student) throws SQLException {
-        PreparedStatement preparedStatement = pool.getConnection("jdbc:mysql://localhost/student_db",
-                "root", "root@JEA").getConnection().prepareStatement(query);
+    private int insertExecute(String query, Student student) throws SQLException {
+        PreparedStatement preparedStatement = pool.getConnection().getConnection().prepareStatement(query);
         preparedStatement.setString(1, student.getId());
         preparedStatement.setString(2, student.getFirstName());
         preparedStatement.setString(3, student.getLastName());
         preparedStatement.setString(4, student.getEmail());
         preparedStatement.setString(5, student.getPassword());
         preparedStatement.setString(6, student.getJoinYear());
-        preparedStatement.executeUpdate();
+        return preparedStatement.executeUpdate();
     }
 
-    private void updateExecute(String query, Student student) throws SQLException {
-        PreparedStatement preparedStatement = pool.getConnection("jdbc:mysql://localhost/student_db",
-                "root", "root@JEA").getConnection().prepareStatement(query);
+    private int updateExecute(String query, Student student) throws SQLException {
+        PreparedStatement preparedStatement = pool.getConnection().getConnection().prepareStatement(query);
         preparedStatement.setString(6, student.getId());
         preparedStatement.setString(1, student.getFirstName());
         preparedStatement.setString(2, student.getLastName());
         preparedStatement.setString(3, student.getEmail());
         preparedStatement.setString(4, student.getPassword());
         preparedStatement.setString(5, student.getJoinYear());
-        preparedStatement.executeUpdate();
+        return preparedStatement.executeUpdate();
     }
 
 

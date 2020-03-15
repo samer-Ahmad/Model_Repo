@@ -2,17 +2,16 @@ package com.samer.regestration.model.dao;
 
 import com.samer.regestration.model.entity.Course;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public interface CourseDAO {
-    Course findCourseById(String courseId) throws SQLException;
+    Course findCourseById(String courseId);
 
-    Course findCourseByName(String courseName) throws SQLException;
+    Course findCourseByName(String courseName);
 
-    List<Course> findCourseByInstructor(String instructorName) throws SQLException;
+    List<Course> findCourseByInstructor(String instructorName);
 
-    void save(Course course) throws SQLException;
+    int save(Course course);
 
-    void delete(String courseId) throws SQLException;
+    int delete(String courseId);
 }

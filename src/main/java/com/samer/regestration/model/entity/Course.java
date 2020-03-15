@@ -1,12 +1,15 @@
 package com.samer.regestration.model.entity;
 
+import java.util.Date;
+import java.util.Objects;
+
 public class Course {
     private String courseId;
     private String courseCode;
     private String courseName;
     private String instructorId;
-    private String capacity;
-    private String startingDate;
+    private int capacity;
+    private Date startingDate;
     private String duration;
     private String totalHours;
 
@@ -14,7 +17,7 @@ public class Course {
     }
 
     public Course(String courseId, String courseCode, String courseName, String instructorId,
-                  String capacity, String startingDate, String duration, String totalHours) {
+                  int capacity, Date startingDate, String duration, String totalHours) {
         this.courseId = courseId;
         this.courseCode = courseCode;
         this.courseName = courseName;
@@ -57,19 +60,19 @@ public class Course {
         this.instructorId = instructorId;
     }
 
-    public String getCapacity() {
+    public int getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(String capacity) {
+    public void setCapacity(int capacity) {
         this.capacity = capacity;
     }
 
-    public String getStartingDate() {
+    public Date getStartingDate() {
         return startingDate;
     }
 
-    public void setStartingDate(String startingDate) {
+    public void setStartingDate(Date startingDate) {
         this.startingDate = startingDate;
     }
 
@@ -101,5 +104,26 @@ public class Course {
                 ", duration='" + duration + '\'' +
                 ", totalHours='" + totalHours + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Course)) return false;
+        Course course = (Course) o;
+        return Objects.equals(getCourseId(), course.getCourseId()) &&
+                Objects.equals(getCourseCode(), course.getCourseCode()) &&
+                Objects.equals(getCourseName(), course.getCourseName()) &&
+                Objects.equals(getInstructorId(), course.getInstructorId()) &&
+                Objects.equals(getCapacity(), course.getCapacity()) &&
+                Objects.equals(getStartingDate(), course.getStartingDate()) &&
+                Objects.equals(getDuration(), course.getDuration()) &&
+                Objects.equals(getTotalHours(), course.getTotalHours());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getCourseId(), getCourseCode(), getCourseName(), getInstructorId(),
+                getCapacity(), getStartingDate(), getDuration(), getTotalHours());
     }
 }

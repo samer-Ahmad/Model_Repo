@@ -10,11 +10,14 @@ public class DataSourcePool {
     private String userName;
     private String password;
 
-    public DataSourcePool() {
+    public DataSourcePool(String url, String userName, String password) {
         this.connection = new JeaQueue<>(10);
+        this.url = url;
+        this.userName = userName;
+        this.password = password;
     }
 
-    public ConnectionWrapper getConnection(String url, String userName, String password) throws SQLException {
+    public ConnectionWrapper getConnection() throws SQLException {
         if (this.connection.isEmpty()) {
             return new ConnectionWrapper(DriverManager.getConnection(url, userName, password));
         } else {
@@ -23,7 +26,7 @@ public class DataSourcePool {
                 return connectionWrapper;
             } else {
                 connectionWrapper.getConnection().close();
-                return getConnection(url, userName, password);
+                return getConnection();
             }
         }
     }
